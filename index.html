@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #a1c4fd, #c2e9fb);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      transition: background 0.3s;
+    }
+
+    .dark-theme {
+      background: #121212;
+      color: #fff;
+    }
+
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .dark-theme .container {
+      background: #1e1e1e;
+      color: white;
+    }
+
+    #display {
+      width: 90%;
+      height: 50px;
+      font-size: 24px;
+      text-align: right;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 2px solid #aaa;
+      border-radius: 8px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 60px);
+      grid-gap: 15px;
+      justify-content: center;
+    }
+
+    .button {
+      background-color: #a259ff;
+      color: white;
+      border: none;
+      font-size: 18px;
+      padding: 15px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .button:hover {
+      background-color: #822dfb;
+    }
+
+    #toggleTheme {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      background: #333;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #toggleTheme:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Smart Calculator</h2>
+    <input type="text" id="display" />
+    <div class="buttons">
+      <button class="button">C</button>
+      <button class="button">%</button>
+      <button class="button">M+</button>
+      <button class="button">M-</button>
+
+      <button class="button">MR</button>
+      <button class="button">√</button>
+      <button class="button">←</button>
+      <button class="button">/</button>
+
+      <button class="button">7</button>
+      <button class="button">8</button>
+      <button class="button">9</button>
+      <button class="button">*</button>
+
+      <button class="button">4</button>
+      <button class="button">5</button>
+      <button class="button">6</button>
+      <button class="button">-</button>
+
+      <button class="button">1</button>
+      <button class="button">2</button>
+      <button class="button">3</button>
+      <button class="button">+</button>
+
+      <button class="button">0</button>
+      <button class="button">.</button>
+      <button class="button">=</button>
+    </div>
+    <button id="toggleTheme">Toggle Dark/Light</button>
+  </div>
+
+  <script>
+    let currentInput = "";
+    let previousInput = "";
+    let operator = "";
+    let resultDisplayed = false;
+    let memory = 0;
+
+    const display = document.getElementById("display");
+    const buttons = document.querySelectorAll(".button");
+    const themeBtn = document.getElementById("toggleTheme");
+    const body = document.body;
+
+    buttons.forEach(button => {
+      button.addEventListener("click", () => handleInput(button.innerText));
+    });
+
+    document.addEventListener("keydown", e => {
+      const keyMap = {
+        Enter: "=",
+        Backspace: "←",
+        Escape: "C"
+      };
+      const key = keyMap[e.key] || e.key;
+      if ("0123456789/*-+.%√".includes(key) || key === "=" || key === ".") {
+        handleInput(key);
+      }
+    });
+
+    function handleInput(value) {
+      if (!isNaN(value) || value === ".") {
+        if (resultDisplayed) {
+          currentInput = value;
+          resultDisplayed = false;
+        } else {
+          currentInput += value;
+        }
+        display.value = currentInput;
+      } else if (["+", "-", "*", "/", "%"].includes(value)) {
+        if (currentInput !== "") {
+          previousInput = currentInput;
+          operator = value;
+          currentInput = "";
+        }
+      } else if (value === "=") {
+        if (previousInput && currentInput && operator) {
+          try {
+            const expression = `${parseFloat(previousInput)}${operator}${parseFloat(currentInput)}`;
+            currentInput = eval(expression).toString();
+            display.value = currentInput;
+            previousInput = "";
+            operator = "";
+            resultDisplayed = true;
+          } catch {
+            display.value = "Error";
+            currentInput = "";
+            previousInput = "";
+            operator = "";
+          }
+        }
+      } else if (value === "C") {
+        currentInput = "";
+        previousInput = "";
+        operator = "";
+        display.value = "";
+      } else if (value === "M+") {
+        try {
+          memory += parseFloat(currentInput || 0);
+        } catch {}
+      } else if (value === "M-") {
+        try {
+          memory -= parseFloat(currentInput || 0);
+        } catch {}
+      } else if (value === "MR") {
+        currentInput = memory.toString();
+        display.value = currentInput;
+        resultDisplayed = true;
+      } else if (value === "√") {
+        try {
+          currentInput = Math.sqrt(parseFloat(currentInput)).toString();
+          display.value = currentInput;
+          resultDisplayed = true;
+        } catch {
+          display.value = "Error";
+          currentInput = "";
+        }
+      } else if (value === "←") {
+        currentInput = currentInput.slice(0, -1);
+        display.value = currentInput;
+      }
+    }
+
+    themeBtn.addEventListener("click", () => {
+      body.classList.toggle("dark-theme");
+    });
+  </script>
+</body>
+</html>
